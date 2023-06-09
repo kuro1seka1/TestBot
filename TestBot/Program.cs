@@ -13,6 +13,8 @@ using System.IO;
 using File = System.IO.File;
 using TestBot;
 using System.Diagnostics;
+using Telegram.Bot.Polling;
+
 
 namespace TestBot
 {
@@ -22,28 +24,30 @@ namespace TestBot
         private static TelegramBotClient Bot;
         private static Dictionary<long, QuestionState> States;
         private static Dictionary<long, int> PlayerScore;
+        
         static void Main(string[] args)
         {
-            quiz = new Quiz("Quiz.txt");
+            quiz = new Quiz("testKursk.txt");
 
             States = new Dictionary<long, QuestionState>();
 
             PlayerScore = new Dictionary<long, int>(); 
 
-            Bot = new TelegramBotClient("6133154742:AAFbVdEO8dWouOl9X62ycFiC17QEJpH7sbg");
+            Bot = new TelegramBotClient("5828907769:AAE0Isn4jXHtREHwTpna9sAxgCVFFM8c6aw");
 
             //Bot.on += BotOnCallbackQueryReceived;
-
+            using CancellationTokenSource cts = new();
             var me = Bot.GetMeAsync().Result;
 
             Console.WriteLine(me.FirstName);
 
-            StartReceivingMessagesAsync().Wait();
+            StartReceivingMessagesAsync(cancellationToken: cts.Token).Wait();
+
 
             Console.ReadLine();
         }
 
-        private static async Task StartReceivingMessagesAsync()
+        private static async Task StartReceivingMessagesAsync(CancellationToken cancellationToken)
         {
             
             var offset = 0;
@@ -116,7 +120,7 @@ namespace TestBot
 
                                     if (answer == question.Answer.ToLower() && sw.ElapsedMilliseconds < 15000)
                                     {
-                                        await Bot.SendTextMessageAsync(chatId, "Correct!");
+                                        await Bot.SendTextMessageAsync(chatId, "Correct!",cancellationToken:cancellationToken);
                                         if (PlayerScore.ContainsKey(playerId))
                                         {
                                             PlayerScore[playerId]++;
@@ -129,7 +133,7 @@ namespace TestBot
                                     }
                                     else
                                     {
-                                        await Bot.SendTextMessageAsync(chatId, "Wrong");
+                                        await Bot.SendTextMessageAsync(chatId, "Wrong",cancellationToken:cancellationToken);
                                     }
                                     
                                     state.CurrentItem = quiz.NextQuestion();
@@ -143,7 +147,23 @@ namespace TestBot
                                 await Bot.SendTextMessageAsync(chatId, "Quiz complete!");
                                 await Bot.SendTextMessageAsync(chatId,  $"You got {PlayerScore[playerId]}/{quiz.Questions.Count} points for the quiz");
                                 break;
-      
+                            //case "/keyboard":
+                            //    var replyKeyboard = new ReplyKeyboardMarkup(new[]
+                            //    {
+                            //        new[]
+                            //        {
+                            //            new KeyboardButton("Орел"),
+                            //            new KeyboardButton("Курск"),
+                            //        },
+                            //        new[]
+                            //        {
+                            //            new KeyboardButton("Белгород") { RequestContact = true},
+                                        
+                            //        }
+                            //    });
+                            //    await Bot.SendTextMessageAsync(message.Chat.Id, "Message", replyMarkup: replyKeyboard);
+                            //    break;
+
                             default:
                                 break;
                         }

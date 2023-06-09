@@ -13,7 +13,7 @@ namespace TestBot
         public List<QuestionItem> AvailableQuestion { get; set; }
         private Random random;
         private int count;
-        public Quiz(string path = "Quiz.txt")
+        public Quiz(string path = "testKursk.txt")
         {
             var lines = File.ReadAllLines(path);
             Questions = lines
